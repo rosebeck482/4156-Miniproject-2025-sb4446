@@ -7,7 +7,7 @@ import java.util.ArrayList;
 /**
  * This class defines the Book entry model.
  */
-public class BOOK implements Comparable<BOOK> {
+public class Book implements Comparable<Book> {
   private String title;
   private ArrayList<String> authors;
   private String language;
@@ -28,7 +28,7 @@ public class BOOK implements Comparable<BOOK> {
    * @param title The title of the book.
    * @param id The id of the book.
    */
-  public BOOK(String title, int id) {
+  public Book(String title, int id) {
     this.title = title;
     this.id = id;
     this.authors = new ArrayList<>();
@@ -57,7 +57,7 @@ public class BOOK implements Comparable<BOOK> {
    * @param copiesAvailable number of copies available of the book.
    * @param totalCopies number of available and checked-out copies of the book.
    */
-  public BOOK(String title, ArrayList<String> authors, String language, String shelvingLocation,
+  public Book(String title, ArrayList<String> authors, String language, String shelvingLocation,
               String publicationDate, String publisher, ArrayList<String> subjects,
               int id, int copiesAvailable, int totalCopies) {
     this.title = title;
@@ -77,7 +77,7 @@ public class BOOK implements Comparable<BOOK> {
   /**
    * No args constructor for Jackson.
    */
-  public BOOK() {
+  public Book() {
     this.authors = new ArrayList<>();
     this.subjects = new ArrayList<>();
     this.returnDates = new ArrayList<>();
@@ -251,7 +251,7 @@ public class BOOK implements Comparable<BOOK> {
   }
 
   @Override
-  public int compareTo(BOOK other) {
+  public int compareTo(Book other) {
     return Integer.compare(this.id, other.id);
   }
 
@@ -265,7 +265,7 @@ public class BOOK implements Comparable<BOOK> {
       return false;
     }
 
-    BOOK cmpBook = obj;
+    Book cmpBook = obj;
     return cmpBook.id == this.id;
   }
 
