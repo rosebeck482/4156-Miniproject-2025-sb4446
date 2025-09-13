@@ -1,4 +1,15 @@
-## Static Analysis Tool Used
-- **Tool**: PMD 7.17.0
-- **Website**: https://pmd.github.io/
-- **Ruleset**: Java Quickstart Rules
+### Static bug finding with PMD
+
+Installation:
+
+```bash
+brew install pmd
+```
+
+Run:
+```bash
+cd 4156-Miniproject-2025-Students/IndividualProject
+pmd check -d ./src/main/java \
+          -R rulesets/java/quickstart.xml \
+          -f text
+```
