@@ -35,7 +35,7 @@ public class BookTest {
     // Branch 1: copiesAvailable == 0
     book.checkoutCopy();
     assertEquals(0, book.getCopiesAvailable());
-    assertTrue(book.hasCopies());
+    assertFalse(book.hasCopies());
 
     // Branch 2: copiesAvailable < 0
     Field f = Book.class.getDeclaredField("copiesAvailable");
@@ -56,12 +56,12 @@ public class BookTest {
   public void deleteCopy_test() {
     // First delete (branch 1)
     boolean branch1 = book.deleteCopy();
-    assertFalse(branch1);
+    assertTrue(branch1);
     assertEquals(0, book.getCopiesAvailable());
 
     // Second delete (branch 2)
     boolean branch2 = book.deleteCopy();
-    assertTrue(branch2);
+    assertFalse(branch2);
     assertEquals(0, book.getCopiesAvailable());
   }
 
@@ -105,7 +105,7 @@ public class BookTest {
     assertEquals(0, book.getCopiesAvailable());
 
     // Branch 2: non-empty returnDates with matching due date
-    assertFalse(book.returnCopy(due));
+    assertTrue(book.returnCopy(due));
   }
 
 }

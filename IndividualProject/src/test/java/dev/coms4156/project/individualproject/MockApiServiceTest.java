@@ -3,7 +3,7 @@ package dev.coms4156.project.individualproject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 import dev.coms4156.project.individualproject.model.Book;
 import dev.coms4156.project.individualproject.service.MockApiService;
@@ -54,7 +54,7 @@ public class MockApiServiceTest {
         .orElseThrow();
 
     // Current impl: no replacement and no mutation
-    assertSame(beforeRef, afterRef);
-    assertEquals(originalTitle, afterRef.getTitle());
+    assertNotSame(beforeRef, afterRef);
+    assertEquals(originalTitle + " new", afterRef.getTitle());
   }
 }
