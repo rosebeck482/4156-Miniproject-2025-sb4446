@@ -1,4 +1,15 @@
-# 4156-Miniproject-2025-Students
-This is the public repo for posting the miniproject assignments to the class. 
+### Static bug finding with PMD
 
-This is a template repository.  See https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template. 
+Installation:
+
+```bash
+brew install pmd
+```
+
+Run:
+```bash
+cd 4156-Miniproject-2025-Students/IndividualProject
+pmd check -d ./src/main/java \
+          -R rulesets/java/quickstart.xml \
+          -f text
+```
