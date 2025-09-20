@@ -3,6 +3,11 @@ package dev.coms4156.project.individualproject.controller;
 import dev.coms4156.project.individualproject.model.Book;
 import dev.coms4156.project.individualproject.service.MockApiService;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +27,7 @@ public class RouteController {
   public RouteController(MockApiService mockApiService) {
     this.mockApiService = mockApiService;
   }
+
 
   @GetMapping({"/", "/index"})
   public String index() {
@@ -97,6 +103,102 @@ public class RouteController {
     } catch (Exception e) {
       System.err.println(e);
       return new ResponseEntity<>("Error occurred when adding book.",
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Returns 10 unique recommended books (5 most popular by number of checkouts, 5 random books).
+   *
+   * @return A {@code ResponseEntity} containing list of 10 unique {@code Book} objects with an
+   *         HTTP 200 if successful or HTTP status and error message indicating an error occurred.
+   */
+  @GetMapping({"/books/recommendation"})
+  public ResponseEntity<?> getRecommendations() {
+    final int recommendedBooksCount = 10;
+    final int popularBooksCount = 5;
+    try {
+
+      List<Book> books = mockApiService.getBooks();
+      if (books == null) {
+        return new ResponseEntity<>("Getting books failed.",
+            HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
+      // Make sure there are at least 10 unique books
+      long uniqueBooks = books.stream()
+          .map(Book::getId)
+          .distinct()
+          .count();
+  
+      if (uniqueBooks < recommendedBooksCount) {
+        return new ResponseEntity<>(
+            "Not enough unique books (need at least 10).",
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+  
+      // Copy of original list
+      List<Book> originalListCopy = new ArrayList<>(books);
+      // List of popular books
+      List<Book> popularBooks = new ArrayList<>();
+      // Set of selected ids for popular books
+      Set<Integer> selectedIds = new HashSet<>();
+
+      // Sort list of items by the number of times checked out in descending order
+      // If number of times checked out is same, sort by id in ascending order
+      originalListCopy.sort((b1, b2) -> {
+        int numCheckoutsCompare = Integer.compare(b2.getAmountOfTimesCheckedOut(),
+            b1.getAmountOfTimesCheckedOut());
+        if (numCheckoutsCompare != 0) {
+          return numCheckoutsCompare;
+        }
+        return Integer.compare(b1.getId(), b2.getId());
+      });
+
+      // Add top 5 popular books to list
+      for (Book b : originalListCopy) {
+        if (popularBooks.size() >= popularBooksCount) {
+          break;
+        }
+        if (!selectedIds.contains(b.getId())) {
+          popularBooks.add(b);
+          selectedIds.add(b.getId());
+        }
+      }
+
+      // Filter out selected popular books and shuffle and collect to a list
+      List<Book> randomBooks = books.stream()
+          .filter(b -> !selectedIds.contains(b.getId()))
+          .collect(Collectors.toList());
+  
+      Collections.shuffle(randomBooks);
+
+      List<Book> selectedRandomBooks = new ArrayList<>();
+      for (Book b : randomBooks) {
+        if (popularBooks.size() + selectedRandomBooks.size() >= recommendedBooksCount) {
+          break;
+        }
+        if (!selectedIds.contains(b.getId())) {
+          selectedRandomBooks.add(b);
+          selectedIds.add(b.getId());
+        }
+      }
+
+      // Make sure the total number of books is 10
+      if (popularBooks.size() + selectedRandomBooks.size() != recommendedBooksCount) {
+        return new ResponseEntity<>("Generated recommendations is not 10 books.",
+            HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
+      List<Book> result = new ArrayList<>(recommendedBooksCount);
+      result.addAll(popularBooks);
+      result.addAll(selectedRandomBooks);
+
+      return new ResponseEntity<>(result, HttpStatus.OK);
+    } catch (Exception e) {
+      System.err.println(e);
+      return new ResponseEntity<>("Error while generating 10 book recommendations.",
           HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
