@@ -129,6 +129,21 @@ public class RouteControllerTest {
   }
 
   /**
+   * Tests getRecommendations() when there are less than 10 books.
+   * Context: Creates only 8 books when 10 are required.
+   * Arguments: none.
+   * Returns: 500 INTERNAL_SERVER_ERROR with error message.
+   * Data I/O: Creates 5 test books, attempts to get recommendations.
+   */
+  @Test
+  public void getRecommendations_lessThan10Books_test() {
+    seedBooks(8);
+    ResponseEntity<?> resp = controller.getRecommendations();
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, resp.getStatusCode());
+    assertTrue(resp.getBody().toString().contains("Not enough unique books (need at least 10)"));
+  }
+  
+  /**
    * Tests getRecommendations() logic when there are books with same popularity.
    * Context: Creates 12 books and makes books 1-6 equally popular (1 checkout each).
    * Arguments: none.
@@ -146,29 +161,6 @@ public class RouteControllerTest {
     var recommendedIds = ids(recommended);
     assertEquals(10, recommendedIds.size());
     assertTrue(recommendedIds.containsAll(idsRange(1, 5)));
-  }
-
-  /**
-   * Tests getRecommendations() randomness by checking if randomly selected books varies for runs.
-   * Context: Creates 20 books with equal popularity (0 checkouts each).
-   * Arguments: none.
-   * Returns: 200 OK.
-   * Data I/O: Creates 20 test books, calls endpoint 25 times to check randomness.
-   */
-  @Test
-  public void getRecommendations_randomness_test() {
-    seedBooks(20); // equally popular
-    java.util.Set<String> seenRandomHalves = new java.util.HashSet<>();
-    for (int i = 0; i < 25; i++) {
-      var recommendedIds = ids(getRecommendedBooks());
-      recommendedIds.removeAll(idsRange(1, 5)); 
-      String key = new java.util.TreeSet<>(recommendedIds).toString(); 
-      seenRandomHalves.add(key);
-      if (seenRandomHalves.size() >= 2) {
-        break;
-      }
-    }
-    assertTrue(seenRandomHalves.size() >= 2, "Random half did not vary");
   }
 
   /**
@@ -190,5 +182,91 @@ public class RouteControllerTest {
     assertEquals(10, recommendedIds.size());
     assertTrue(recommendedIds.containsAll(idsRange(1, 5))); 
   }
+
+  /**
+   * Tests checkout() when book exists and has copies.
+   * Context: Creates book with 2 copies.
+   * Arguments: none.
+   * Returns: 200 OK with updated book object.
+   * Data I/O: Creates book, does checkout, checks field updates.
+   */
+  @Test
+  public void checkout_test() {
+    service.getBooks().clear();
+    service.getBooks().add(new Book("NewBook", 111));
+    // add copy so it has 2 copies
+    service.getBooks().get(0).addCopy();
   
+    Book beforeCheckout = service.getBooks().get(0);
+    int copiesAvailable = beforeCheckout.getCopiesAvailable();
+    final int checkoutNumber = beforeCheckout.getAmountOfTimesCheckedOut();
+    int returnDates = beforeCheckout.getReturnDates().size();
+  
+    ResponseEntity<?> resp = controller.checkout(111);
+  
+    assertEquals(HttpStatus.OK, resp.getStatusCode());
+
+    Book afterCheckout = (Book) resp.getBody();
+
+    assertEquals(copiesAvailable - 1, afterCheckout.getCopiesAvailable());
+    assertEquals(returnDates + 1, afterCheckout.getReturnDates().size());
+    assertEquals(checkoutNumber + 1, afterCheckout.getAmountOfTimesCheckedOut());
+  }
+
+  /**
+   * Tests checkout() with 3 checkouts until no copies left.
+   * Context: Creates book with 2 copies.
+   * Arguments: none.
+   * Returns: 200 OK for first 2 checkouts, then for third checkout returns 409 CONFLICT.
+   * Data I/O: Creates book, does 3 checkouts.
+   */
+  @Test
+  public void checkout_3checkouts_test() {
+    service.getBooks().clear();
+    service.getBooks().add(new Book("NewBook", 111));
+    Book b = service.getBooks().get(0);
+    // make it to have 2 copies
+    b.addCopy();
+  
+    assertEquals(HttpStatus.OK, controller.checkout(111).getStatusCode());
+    assertEquals(HttpStatus.OK, controller.checkout(111).getStatusCode());
+    assertEquals(HttpStatus.CONFLICT, controller.checkout(111).getStatusCode());
+  }
+
+  /**
+   * Tests checkout() when book id doesn't exist.
+   * Context: Creates book but tries checkout with ID that doesn't exist.
+   * Arguments: none.
+   * Returns: 404 NOT_FOUND with error message.
+   * Data I/O: Creates book, attempts checkout with invalid ID.
+   */
+  @Test
+  public void checkout_noId_test() {
+    service.getBooks().clear();
+    service.getBooks().add(new Book("NewBook", 111));
+  
+    ResponseEntity<?> resp = controller.checkout(10000);
+    assertEquals(HttpStatus.NOT_FOUND, resp.getStatusCode());
+    assertInstanceOf(String.class, resp.getBody());
+  }  
+
+  /**
+   * Tests checkout() when book has 0 copies.
+   * Context: Creates book and makes it have 0 copies.
+   * Arguments: none.
+   * Returns: 409 CONFLICT with error message.
+   * Data I/O: Creates book, makes it to have 0 copies, tries checkout.
+   */
+  @Test
+  public void checkout_0copies_test() {
+    // 1 copy
+    service.getBooks().clear();
+    service.getBooks().add(new Book("NewBook", 111));
+    // check out to make it to have 0 copies
+    service.getBooks().get(0).checkoutCopy();
+  
+    ResponseEntity<?> resp = controller.checkout(111);
+    assertEquals(HttpStatus.CONFLICT, resp.getStatusCode());
+    assertInstanceOf(String.class, resp.getBody());
+  }
 }

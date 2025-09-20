@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -27,7 +28,6 @@ public class RouteController {
   public RouteController(MockApiService mockApiService) {
     this.mockApiService = mockApiService;
   }
-
 
   @GetMapping({"/", "/index"})
   public String index() {
@@ -200,6 +200,42 @@ public class RouteController {
       System.err.println(e);
       return new ResponseEntity<>("Error while generating 10 book recommendations.",
           HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Check out copy of book.
+   *
+   * @param bookId An {@code int}, id of the book to check out.
+   * @return A {@code ResponseEntity} containing updated {@code Book} with an
+   *         HTTP 200 if successful, HTTP 404 if book is not found,
+   *         HTTP 409 if no copy available, or a message indicating an error occurred with an
+   *         HTTP 500 code.
+   */
+  @PatchMapping("/checkout")
+  public ResponseEntity<?> checkout(@RequestParam("id") int bookId) {
+    try {
+      Book book = mockApiService.getBooks().stream()
+          .filter(b -> b.getId() == bookId)
+          .findFirst()
+          .orElse(null);
+
+      if (book == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body("No book with id " + bookId + " found.");
+      }
+
+      String dueDate = book.checkoutCopy();
+      if (dueDate == null) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body("No copy available to checkout for book with id " + bookId + ".");
+      }
+
+      return ResponseEntity.ok(book);
+    } catch (Exception e) {
+      System.err.println(e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Error occurred for check out of book with id " + bookId + ".");
     }
   }
 
