@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.coms4156.project.individualproject.model.Book;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 
@@ -16,8 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class MockApiService {
 
-  private ArrayList<Book> books;
-  private ArrayList<String> bags;
+  private List<Book> books;
+  private List<String> bags;
 
   /**
    * Constructs a new {@code MockApiService} and loads book data from a JSON file located at
@@ -33,7 +34,7 @@ public class MockApiService {
         books = new ArrayList<>(0);
       } else {
         ObjectMapper mapper = new ObjectMapper();
-        books = mapper.readValue(is, new TypeReference<ArrayList<Book>>(){});
+        books = mapper.readValue(is, new TypeReference<List<Book>>(){});
         System.out.println("Successfully loaded books from mockdata/books.json.");
       }
     } catch (Exception e) {
@@ -41,7 +42,7 @@ public class MockApiService {
     }
   }
 
-  public ArrayList<Book> getBooks() {
+  public List<Book> getBooks() {
     return books;
   }
 
@@ -54,7 +55,7 @@ public class MockApiService {
    */
 
   public void updateBook(Book newBook) {
-    ArrayList<Book> tmpBooks = new ArrayList<>();
+    List<Book> tmpBooks = new ArrayList<>();
     for (Book book : books) {
       if (book.equals(newBook)) {
         tmpBooks.add(newBook);

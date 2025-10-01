@@ -3,24 +3,24 @@ package dev.coms4156.project.individualproject.model;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class defines the Book entry model.
  */
 public class Book implements Comparable<Book> {
   private String title;
-  private ArrayList<String> authors;
+  private List<String> authors;
   private String language;
   private String shelvingLocation;
   private String publicationDate;
   private String publisher;
-  private ArrayList<String> subjects;
+  private List<String> subjects;
   private int id;
   private int amountOfTimesCheckedOut;
   private int copiesAvailable;
-  private ArrayList<String> returnDates;
+  private List<String> returnDates;
   private int totalCopies;
-  private ArrayList<String> bookmarks;
 
   /**
    * Very basic Book constructor.
@@ -57,8 +57,8 @@ public class Book implements Comparable<Book> {
    * @param copiesAvailable number of copies available of the book.
    * @param totalCopies number of available and checked-out copies of the book.
    */
-  public Book(String title, ArrayList<String> authors, String language, String shelvingLocation,
-              String publicationDate, String publisher, ArrayList<String> subjects,
+  public Book(String title, List<String> authors, String language, String shelvingLocation,
+              String publicationDate, String publisher, List<String> subjects,
               int id, int copiesAvailable, int totalCopies) {
     this.title = title;
     this.authors = authors;
@@ -172,11 +172,11 @@ public class Book implements Comparable<Book> {
     this.title = title;
   }
 
-  public ArrayList<String> getAuthors() {
+  public List<String> getAuthors() {
     return authors;
   }
 
-  public void setAuthors(ArrayList<String> authors) {
+  public void setAuthors(List<String> authors) {
     this.authors = authors;
   }
 
@@ -212,11 +212,11 @@ public class Book implements Comparable<Book> {
     this.publisher = publisher;
   }
 
-  public ArrayList<String> getSubjects() {
+  public List<String> getSubjects() {
     return subjects;
   }
 
-  public void setSubjects(ArrayList<String> subjects) {
+  public void setSubjects(List<String> subjects) {
     this.subjects = subjects;
   }
 
@@ -236,11 +236,11 @@ public class Book implements Comparable<Book> {
     return copiesAvailable;
   }
 
-  public ArrayList<String> getReturnDates() {
+  public List<String> getReturnDates() {
     return returnDates;
   }
 
-  public void setReturnDates(ArrayList<String> returnDates) {
+  public void setReturnDates(List<String> returnDates) {
     this.returnDates = returnDates != null ? returnDates : new ArrayList<>();
   }
 
