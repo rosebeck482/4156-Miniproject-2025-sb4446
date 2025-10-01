@@ -1,6 +1,7 @@
 package dev.coms4156.project.individualproject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import dev.coms4156.project.individualproject.controller.RouteController;
 import dev.coms4156.project.individualproject.model.Book;
 import dev.coms4156.project.individualproject.service.MockApiService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -65,6 +67,36 @@ public class RouteControllerTest {
     ResponseEntity<?> resp = controller.getAvailableBooks();
     assertEquals(HttpStatus.OK, resp.getStatusCode());
     assertNotNull(resp.getBody());
+  }
+
+  /**
+   * Tests getAvailableBooks() excludes books having 0 copies.
+   * Arguments: none.
+   * Returns: 200 OK. Book with 0 copies excluded in response.
+   * Data I/O: checkouts to make 0 copies for the first book, reads filtered list.
+   */
+  @Test
+  public void getAvailableBooks_zeroCopy_test() {
+    Book zeroCopyBook = service.getBooks().get(0);
+    int copies = zeroCopyBook.getCopiesAvailable();
+    for (int i = 0; i < copies; i++) {
+      zeroCopyBook.checkoutCopy();
+    }
+    final int zeroCopyBookId = zeroCopyBook.getId();
+
+    ResponseEntity<?> resp = controller.getAvailableBooks();
+    assertEquals(HttpStatus.OK, resp.getStatusCode());
+    assertInstanceOf(List.class, resp.getBody());
+
+    List<?> raw = (List<?>) resp.getBody();
+    List<Book> books = raw.stream()
+        .map(Book.class::cast)
+        .toList();
+
+    List<Integer> ids = books.stream()
+        .map(Book::getId)
+        .toList();
+    assertFalse(ids.contains(zeroCopyBookId));
   }
 
   /**
@@ -181,6 +213,28 @@ public class RouteControllerTest {
     var recommendedIds = ids(recommended);
     assertEquals(10, recommendedIds.size());
     assertTrue(recommendedIds.containsAll(idsRange(1, 5))); 
+  }
+
+  /**
+   * Tests getRecommendations() path when getBooks() returns null.
+   * Arguments: none.
+   * Returns: 500 INTERNAL_SERVER_ERROR with error message.
+   * Data I/O: none.
+   */
+  @Test
+  public void getRecommendations_Getbooks_null_test() {
+    MockApiService nullService = new MockApiService() {
+      @Override
+      public List<Book> getBooks() {
+        return null;
+      }
+    };
+
+    RouteController ctrl = new RouteController(nullService);
+    ResponseEntity<?> resp = ctrl.getRecommendations();
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, resp.getStatusCode());
+    assertInstanceOf(String.class, resp.getBody());
+    assertTrue(resp.getBody().toString().contains("Getting books failed."));
   }
 
   /**

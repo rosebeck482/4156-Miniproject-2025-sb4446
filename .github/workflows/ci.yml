@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+        working-directory: IndividualProject
+
+      - name: Build and run mvn clean test
+        run: ./mvnw -B -ntp clean test
+        working-directory: IndividualProject
+
+      - name: Run mvn jacoco:report for JaCoCo report
+        run: ./mvnw -B -ntp jacoco:report
+        working-directory: IndividualProject
