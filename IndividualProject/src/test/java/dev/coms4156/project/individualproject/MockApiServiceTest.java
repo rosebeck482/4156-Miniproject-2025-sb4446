@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 import dev.coms4156.project.individualproject.model.Book;
 import dev.coms4156.project.individualproject.service.MockApiService;
-import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -25,7 +25,7 @@ public class MockApiServiceTest {
   @Test
   public void loadBook_test() {
     MockApiService svc = new MockApiService();
-    ArrayList<Book> books = svc.getBooks();
+    List<Book> books = svc.getBooks();
     assertNotNull(books);
     assertFalse(books.isEmpty());
   }

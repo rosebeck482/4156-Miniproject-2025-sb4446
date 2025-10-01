@@ -65,7 +65,7 @@ public class RouteController {
   @PutMapping({"/books/available"})
   public ResponseEntity<?> getAvailableBooks() {
     try {
-      ArrayList<Book> availableBooks = new ArrayList<>();
+      List<Book> availableBooks = new ArrayList<>();
 
       for (Book book : mockApiService.getBooks()) {
         if (book.hasCopies()) {
